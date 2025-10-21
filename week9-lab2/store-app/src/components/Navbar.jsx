@@ -94,9 +94,9 @@ const Navbar = () => {
               )}
             </button>
             
-            <button className="p-2 text-gray-600 hover:text-viridian-600 transition-colors">
-              <UserIcon className="h-6 w-6" />
-            </button>
+            <Link to="/login" className="p-2 text-gray-600 hover:text-viridian-600 transition-colors">
+                <UserIcon className="h-6 w-6" />
+            </Link>
 
             {/* Mobile Menu Toggle */}
             <button 

@@ -97,7 +97,7 @@ func getNewBooks(c *gin.Context) {
     var rows *sql.Rows
     var err error
     // ลูกค้าถาม "มีหนังสืออะไรบ้าง"
-    rows, err = db.Query("SELECT id, title, author, isbn, year, price, created_at, updated_at FROM books oder by created_at desc limit 5")
+    rows, err = db.Query("SELECT id, title, author, isbn, year, price, created_at, updated_at FROM books order by created_at desc limit 5")
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
@@ -123,19 +123,23 @@ func getNewBooks(c *gin.Context) {
 func getBook(c *gin.Context) {
     id := c.Param("id")
     var book Book
- 
-    // QueryRow ใช้เมื่อคาดว่าจะได้ผลลัพธ์ 0 หรือ 1 แถว
-    err := db.QueryRow("SELECT id, title, author FROM books WHERE id = $1", id).
-        Scan(&book.ID, &book.Title, &book.Author)
- 
+
+    // แก้ไข query ให้ select ทุกฟิลด์ที่ต้องการ
+    err := db.QueryRow(`
+        SELECT id, title, author, isbn, year, price, created_at, updated_at 
+        FROM books 
+        WHERE id = $1`, id).
+        Scan(&book.ID, &book.Title, &book.Author, &book.ISBN, 
+             &book.Year, &book.Price, &book.CreatedAt, &book.UpdatedAt)
+
     if err == sql.ErrNoRows {
-        c.JSON(http.StatusNotFound, gin.H{"error": "book not found"})
+        c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
         return
     } else if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
- 
+
     c.JSON(http.StatusOK, book)
 }
  
@@ -245,7 +249,7 @@ func main() {
     api := r.Group("/api/v1")
     {
         api.GET("/books", getAllBooks)
-        api.GET("/books", getNewBooks)
+        api.GET("/books/news", getNewBooks)
         api.GET("/books/:id", getBook)
         api.POST("/books", createBook)
         api.PUT("/books/:id", updateBook)
